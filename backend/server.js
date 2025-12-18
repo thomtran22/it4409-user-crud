@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 // Kết nối MongoDB với username là MSSV, password là MSSV, dbname là it4409
 mongoose
-    .connect("mongodb+srv://20225410:20225410@cluster0.cqcvr20.mongodb.net/it4409?retryWrites=true&w=majority")
+    .connect(process.env.MONGODB_CONNECT_STRING)
     .then(() => console.log("Connected to MongoDB"))
     .catch((err) => console.error("MongoDB Error:", err));
 
@@ -143,6 +143,7 @@ app.delete("/api/users/:id", async (req, res) => {
     }
 });
 // Start server
-app.listen(3003, () => {
-    console.log("Server running on http://localhost:3003");
+const PORT = process.env.PORT || 3003;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
