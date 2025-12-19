@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 // Kết nối MongoDB với username là MSSV, password là MSSV, dbname là it4409
 mongoose
-    .connect(process.env.MONGODB_CONNECT_STRING)
+    .connect("mongodb+srv://20225410:20225410@cluster0.cqcvr20.mongodb.net/it4409?retryWrites=true&w=majority")
     .then(() => console.log("Connected to MongoDB"))
     .catch((err) => console.error("MongoDB Error:", err));
 
@@ -29,7 +29,7 @@ const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         required: [true, 'Email không được để trống'],
-        unique: true, //
+        unique: true, //Quan trọng
         match: [/^\S+@\S+\.\S+$/, 'Email không hợp lệ']
     },
     address: {
@@ -38,6 +38,8 @@ const UserSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model("User", UserSchema);
+
+// // TODO: Implement API endpoints
 app.get("/api/users", async (req, res) => {
     try {
         // Lấy query params
@@ -59,6 +61,7 @@ app.get("/api/users", async (req, res) => {
         // Tính skip
         const skip = (page - 1) * limit;
 
+        //DÙNG Promise.all để chạy song song find + count
         const [users, total] = await Promise.all([
             User.find(filter).skip(skip).limit(limit),
             User.countDocuments(filter)
@@ -85,11 +88,9 @@ app.post("/api/users", async (req, res) => {
         const { name, age, email, address } = req.body;
 
         // Kiểm tra email tồn tại
-         const existing = await User.findOne({ email });
-        if (existing) {
-            return res.status(400).json({
-                error: "Email đã tồn tại, vui lòng nhập email khác"
-            });
+        const exist = await User.findOne({ email });
+        if (exist) {
+            return res.status(400).json({ error: "Email đã tồn tại" });
         }
         // Tạo user mới
         const newUser = await User.create({ name, age, email, address });
@@ -115,7 +116,7 @@ app.put("/api/users/:id", async (req, res) => {
         const updatedUser = await User.findByIdAndUpdate(
             id,
             { name, age, email, address },
-            { new: true, runValidators: true }
+            { new: true, runValidators: true } // Quan trọng
         );
         if (!updatedUser) {
             return res.status(404).json({ error: "Không tìm thấy người dùng" });
@@ -143,7 +144,6 @@ app.delete("/api/users/:id", async (req, res) => {
     }
 });
 // Start server
-const PORT = process.env.PORT || 3003;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+app.listen(3003, () => {
+    console.log("Server running on http://localhost:3003");
 });
